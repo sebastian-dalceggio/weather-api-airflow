@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.1.1
+    hooks:
+    - id: black
+      language_version: python3.10
+  - repo: local
+    hooks:
+    - id: mypy
+      name: mypy
+      entry: poetry run mypy ./dags/
+      pass_filenames: false
+      language: python
+      types:
+      - python
+    - id: mypy_tests
+      name: mypy_tests
+      entry: poetry run mypy ./tests/
+      pass_filenames: false
+      language: python
+      types:
+      - python
+    - id: pylint
+      name: pylint
+      entry: poetry run pylint ./dags/ ./tests
+      language: python
+      pass_filenames: false
+      types:
+      - python

@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "weather-api-airflow"
+version = "0.1.0"
+description = ""
+authors = ["Sebastián Dalceggio <sdalceggio@gmail.com>"]
+packages = [{include = "dags"}]
+
+[tool.poetry.dependencies]
+python = "~3.10"
+python-decouple = "^3.8"
+cloudpathlib = "^0.18.1"
+weather-api = {git = "https://github.com/sebastian-dalceggio/weather-api.git"}
+
+[tool.poetry.group.dev.dependencies]
+apache-airflow = "2.8.2"
+mypy = "^1.8.0"
+types-pyyaml = "^6.0.12.12"
+pylint = "^3.1.0"
+black = "^24.2.0"
+pre-commit = "^3.6.2"
+pytest = "^8.0.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
