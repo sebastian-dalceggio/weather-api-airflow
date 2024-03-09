@@ -22,7 +22,14 @@ repos:
       - python
     - id: pylint
       name: pylint
-      entry: poetry run pylint ./dags/ ./tests
+      entry: poetry run pylint ./dags/ --recursive=true
+      language: python
+      pass_filenames: false
+      types:
+      - python
+    - id: pylint_tests
+      name: pylint_tests
+      entry: poetry run pylint ./tests
       language: python
       pass_filenames: false
       types:

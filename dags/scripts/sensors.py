@@ -9,7 +9,7 @@ def file_available_sensor(query: str, date: str) -> PokeReturnValue:
     """Downloads required data from SMN web.
 
     Args:
-        query (str), {"measured", "forecast", "observations", "solar_radiation"}: type of data
+        query (str): {"measured", "forecast", "observations", "solar_radiation"}: type of data
             required
         date (str): date required in the format YYYYMMDD
     """

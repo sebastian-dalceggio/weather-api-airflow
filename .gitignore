@@ -1,2 +1,6 @@
 .env
 __pycache__/
+config/*
+logs/*
+plugins/*
+storage/*

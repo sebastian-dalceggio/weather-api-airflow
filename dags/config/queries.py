@@ -2,7 +2,7 @@
 
 import pendulum
 
-from dags.config.utils import QueryData
+from config.utils import QueryData
 
 QUERIES = [
     QueryData(
