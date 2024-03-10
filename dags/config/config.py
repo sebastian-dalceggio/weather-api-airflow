@@ -1,5 +1,7 @@
 "Config variables for airflow"
 
+from pathlib import Path
+
 from decouple import AutoConfig  # type: ignore
 
 PATH_TO_PYTHON_BINARY: str = "/opt/airflow/weather-api/.venv/bin/python"
@@ -17,3 +19,5 @@ LOCAL_DATABASE: str = (
     f"{LOCAL_DATABASE_TYPE}://{LOCAL_DATABASE_USER}:{LOCAL_DATABASE_PASSWORD}@"
     f"{LOCAL_DATABASE_HOST}/{LOCAL_DATABASE_NAME}"
 )
+
+SODA_CONFIGURATION_PATH = Path(__file__).parent / "soda/configuration.yml"

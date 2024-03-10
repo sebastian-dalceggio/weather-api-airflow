@@ -1,0 +1,9 @@
+data_source weather_api_db:
+  type: postgres
+  connection:
+    host: ${LOCAL_DATABASE_HOST}
+    port: ${LOCAL_DATABASE_PORT}
+    username: ${LOCAL_DATABASE_USER}
+    password: ${LOCAL_DATABASE_PASSWORD}
+  database: ${LOCAL_DATABASE_NAME}
+  schema: public

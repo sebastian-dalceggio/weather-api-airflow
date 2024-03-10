@@ -101,13 +101,14 @@ def do_migrations(
 
 
 def get_trigger(
-    query: str, load_dag_id: str, csv_file_relative_path
+    query: str, date: str, load_dag_id: str, csv_file_relative_path
 ) -> TriggerDagRunOperator:
     """Returns a dag trigger operator used to trigger the load_dag.
 
     Args:
         query (str): {"measured", "forecast", "observations", "solar_radiation"}: type of data
             required
+        date (str): date required in the format YYYYMMDD
         load_dag_id (str): id of the load_dag
         csv_file_relative_path (Path | CloudPath): relative path for the file from folder_path
 
@@ -117,7 +118,11 @@ def get_trigger(
     return TriggerDagRunOperator(
         task_id="trigger_load",
         trigger_dag_id=load_dag_id,
-        conf={"query": query, "csv_file_relative_path": str(csv_file_relative_path)},
+        conf={
+            "query": query,
+            "date": date,
+            "csv_file_relative_path": str(csv_file_relative_path),
+        },
     )
 
 
@@ -129,10 +134,11 @@ def get_load_dag_data(dag_run: DagRun) -> Dict[str, str]:
         dag_run (DagRun): data of the dag that trigered the load_dag.
 
     Returns:
-        Dict[str, str]: query, csv_file_relative_path
+        Dict[str, str]: query, date, csv_file_relative_path
     """
     load_dag_data = {}
     load_dag_data["query"] = dag_run.conf.get("query")
+    load_dag_data["date"] = dag_run.conf.get("date")
     load_dag_data["csv_file_relative_path"] = dag_run.conf.get("csv_file_relative_path")
     return load_dag_data
 
@@ -153,3 +159,20 @@ def load_to_database(
 
     full_csv_file_path = folder_path / csv_file_relative_path
     to_database(query, full_csv_file_path, database_uri)
+
+
+@task.external_python(task_id="check_load_to_database", python=PATH_TO_PYTHON_BINARY)
+def check_load_to_database(
+    query: str, date: str, data_source_name: str, configuration_file_path
+) -> None:
+    """Data validation on the query tables using Soda.
+
+    Args:
+        query (str), {"measured", "forecast", "observations", "solar_radiation"}: type of data.
+        date (str): date required in the format YYYYMMDD.
+        data_source_name (str): data source name.
+        configuration_file_path (Path): path to the datasource configuration path.
+    """
+    from weather_api.etl import check_to_database
+
+    check_to_database(query, date, data_source_name, configuration_file_path)

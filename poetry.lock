@@ -3921,7 +3921,7 @@ requests = "^2.31.0"
 type = "git"
 url = "https://github.com/sebastian-dalceggio/weather-api.git"
 reference = "HEAD"
-resolved_reference = "154e481f76188035f26071b69f1ba9fd2b51a65a"
+resolved_reference = "e7a67104ca2f102f3c7f357eebb17b7a2cf59dcf"
 
 [[package]]
 name = "werkzeug"
