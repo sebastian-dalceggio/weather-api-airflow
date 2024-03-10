@@ -5,7 +5,7 @@ RUN apt update && apt install git -y
 
 USER 50000
 RUN pip install poetry
-RUN pip install 'git+https://github.com/sebastian-dalceggio/weather-api.git#egg=weather_api_airflow&subdirectory=airflow_scripts'
+RUN pip install 'git+https://github.com/sebastian-dalceggio/weather-api-airflow.git'
 WORKDIR /opt/airflow/
 RUN poetry config virtualenvs.in-project true
 RUN git clone https://github.com/sebastian-dalceggio/weather-api.git

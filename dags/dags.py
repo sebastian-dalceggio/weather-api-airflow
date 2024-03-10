@@ -6,12 +6,21 @@ from typing import Dict
 from airflow.decorators import dag
 from airflow.models.baseoperator import chain
 from airflow.models.dag import DAG
+import pendulum
 
-from scripts.tasks import get_current_data, download_raw, get_csv
+from scripts.tasks import (
+    get_current_data,
+    download_raw,
+    get_csv,
+    do_migrations,
+    get_trigger,
+    get_load_dag_data,
+    load_to_database,
+)
 from scripts.sensors import file_available_sensor
 
 from config.queries import QUERIES
-from config.infra import storage_folder_path
+from config.infra import storage_folder_path, database_uri
 
 DAGS: Dict[str, DAG] = {}
 
@@ -28,7 +37,6 @@ for query_data in QUERIES:
         """Weather api dag"""
 
         query = query_data.query
-        folder_path = storage_folder_path
         current_data = get_current_data(query, "{{  data_interval_end }}")
         raw_file_relative_path = current_data["raw_file_relative_path"]
         csv_file_relative_path = current_data["csv_file_relative_path"]
@@ -37,10 +45,40 @@ for query_data in QUERIES:
 
         exists = file_available_sensor(query, date)
 
-        download = download_raw(query, date, folder_path, raw_file_relative_path)
-        csv = get_csv(
-            query, date, folder_path, raw_file_relative_path, csv_file_relative_path
+        download = download_raw(
+            query, date, storage_folder_path, raw_file_relative_path
         )
-        chain(current_data, exists, download, csv)
+        csv = get_csv(
+            query,
+            date,
+            storage_folder_path,
+            raw_file_relative_path,
+            csv_file_relative_path,
+        )
+        trigger_load = get_trigger(query, "load_data_dag", csv_file_relative_path)
+
+        chain(current_data, exists, download, csv, trigger_load)
 
     DAGS[query_data.query] = weather_api_dag()
+
+
+@dag(
+    dag_id="load_data_dag",
+    start_date=pendulum.today(),
+    max_active_runs=1,
+)
+def load_dag():
+    """Load data dag"""
+    load_dag_data = get_load_dag_data()  # pylint: disable=no-value-for-parameter
+    query = load_dag_data["query"]
+    csv_file_relative_path = load_dag_data["csv_file_relative_path"]
+
+    migrations = do_migrations(database_uri, storage_folder_path)
+    load = load_to_database(
+        query, database_uri, storage_folder_path, csv_file_relative_path
+    )
+
+    chain(load_dag_data, migrations, load)
+
+
+load_dag()
