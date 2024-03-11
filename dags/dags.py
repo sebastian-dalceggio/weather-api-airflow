@@ -17,12 +17,14 @@ from scripts.tasks import (
     get_load_dag_data,
     load_to_database,
     check_load_to_database,
+    static_data,
 )
 from scripts.sensors import file_available_sensor
 
 from config.queries import QUERIES
 from config.config import LOCAL_DATABASE_NAME, SODA_CONFIGURATION_PATH
 from config.infra import storage_folder_path, database_uri
+from config.static_data import STATIC_DATA
 
 DAGS: Dict[str, DAG] = {}
 
@@ -77,13 +79,18 @@ def load_dag():
     csv_file_relative_path = load_dag_data["csv_file_relative_path"]
 
     migrations = do_migrations(database_uri, storage_folder_path)
+
+    static_data_tasks = []
+    for static_type in STATIC_DATA:
+        static_data_tasks.append(static_data(static_type, database_uri))
+
     load = load_to_database(
         query, database_uri, storage_folder_path, csv_file_relative_path
     )
     first_check = check_load_to_database(
         query, date, LOCAL_DATABASE_NAME, SODA_CONFIGURATION_PATH
     )
-    chain(load_dag_data, migrations, load, first_check)
+    chain(load_dag_data, migrations, *static_data_tasks, load, first_check)
 
 
 load_dag()

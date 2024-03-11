@@ -100,6 +100,22 @@ def do_migrations(
     migrate_database(database_uri, full_version_locations)
 
 
+@task.external_python(task_id="load_static_data", python=PATH_TO_PYTHON_BINARY)
+def static_data(
+    static_data_type: str,
+    database_uri: str,
+) -> None:
+    """Transforms the text file into a csv file.
+
+    Args:
+        static_data (str), {"stations"}: type of data.
+        database_uri (str): uri of the database
+    """
+    from weather_api.etl import load_static_data
+
+    load_static_data(static_data_type, database_uri)
+
+
 def get_trigger(
     query: str, date: str, load_dag_id: str, csv_file_relative_path
 ) -> TriggerDagRunOperator:

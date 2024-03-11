@@ -4,7 +4,7 @@ from airflow.decorators import task
 from airflow.sensors.base import PokeReturnValue
 
 
-@task.sensor(poke_interval=10, timeout=10, mode="reschedule")
+@task.sensor(poke_interval=30, timeout=86400, mode="reschedule")
 def file_available_sensor(query: str, date: str) -> PokeReturnValue:
     """Downloads required data from SMN web.
 
