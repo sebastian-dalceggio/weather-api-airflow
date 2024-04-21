@@ -1,39 +1,39 @@
 # weather-api-airflow
 
-## Introducción
+## Introduction
 
-En este repositorio se implenta el paquete [weather-api](https://github.com/sebastian-dalceggio/weather-api) en Airflow para la obtención de datos de la página web del servicio meteorológico nacional.
+In this reposotory is implemented the package [weather-api](https://github.com/sebastian-dalceggio/weather-api) in Airflow to get data from the National Meteorological Service of Argentina (SMN).
 
 ## Docker
 
-Para utilizar Airflow se usa Docker, usando el archivo docker-compose.yaml que ofrece la documentación oficial, realizándole los cambios necesarios. A este mismo archivo se le agrega una base de datos Postgres en la cual se van a cargar todos los datos.
+Airflow is started using Docker, using the docker-compose.yaml file from the official docs, making the necessary changes. A Postgres database is added to this same file, which will be used to load all the data.
 
-Se utiliza una imagen customizada de docker para poder instalarle el paquete weather-api. En el ambiente de Airflow se instala directamente el paquete weather-api-airflow el cual tiene como dependencia el paquete weather-api sin el grupo de dependencias "etl". Por otro lado el paquete weather-api con el grupo "etl" se instala en un virtual environment que va a ser utilizado por las tasks.
+A custom Docker image is used. The weather-api-airflow package is installed in the Airflow environment. It has the weather-api package as a dependency without the "etl" group. On the other hand, the weather-api package with the "etl" dependency group is installed in a virtual envirnment, which will be used for some of the tasks.
 
 ## Dags
 
-El proceso cuenta con dos dags:
+The process has two dags:
 
-1.  weather_api_dag: el cual se genera para cada una de las queries usando un for loop. Su función es la de extraer, validar y convertir en csv los datos.
-2.  load_data: el cual se encarga de cargar los archivos csv en la base de datos y de las transformaciones posteriores.
+1.  weather_api_dag: one is generated for each query using a for loop. Its function is to extract, validate and convert the data to CSV.
+2.  load_data: load the CSV files into the database and perform subsequent transformations.
 
-A continuación se detallan las tareas de cada uno de los dags. Las marcadas con asterisco son aquellas que corren dentro del virtual environment.
+The tasks of each of the dags are detailed below. Those marked with an asterisk are those that run within the virtual environment.
 
 ### weather_api_dag
 
-Este dag cuenta con las siguientes tareas:
+This dag has the following tasks:
 
-1.  get_current_data: devuelve los argumentos necesarios para las subsiguientes tareas para la actual corrida
-2.  file_available_sensor: sensor que verifica la existencia del archivo en el origen. En caso de no existir, repite la búsqueda cada media hora con un time out de 24 hs.
-3.  download_raw*: descarga el archivo de texto y valida su composición.
-4.  get_csv:* transforma el archivo de texto en un archivo csv y lo guarda.
-5.  trigger_load: dispara el funcionamiento del dag load_data.
+1.  get_current_data: it returns the needed arguments for the subsequent tasks of the current execution.
+2.  file_available_sensor: it checks the existence of a file in the origin. If there is no file, it repeats the verification every 30 minutes with a timeout of 24 hs.
+3.  download_raw*: it downloads the text file and validate its composition.
+4.  get_csv*: it transforms the file text into a CSV file and then saves it.
+5.  trigger_load: it triggers the load_data dag.
 
 ### load_data
 
-Este dag cuenta con las siguientes tareas:
+This dag has the following tasks:
 
-1.  get_load_dag_data: devuelve los argumentos necesarios para las subsiguientes tareas para la actual corrida.
-2.  do_migrations*: crea o modifica el esquema de las tablas en la base datos.
-3.  load_to_database*: carga los archivos csv en la base datos.
-4.  check_load_to_database*: valida los datos de las tablas de la base de datos.
+1.  get_load_dag_data: it returns the needed arguments for the subsequent tasks of the current execution.
+2.  do_migrations*: it creates or modifies the tables in the database.
+3.  load_to_database*: it loads the CSV files in the database.
+4.  check_load_to_database*: it validates the data in the database.
